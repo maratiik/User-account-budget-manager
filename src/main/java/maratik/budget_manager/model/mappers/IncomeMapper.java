@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import maratik.budget_manager.api.exceptions.EntityNotFoundException;
 import maratik.budget_manager.api.repositories.UserRepository;
 import maratik.budget_manager.model.dto.income.IncomeDto;
-import maratik.budget_manager.model.dto.income.IncomeDtoWithId;
 import maratik.budget_manager.model.entities.Income;
 import maratik.budget_manager.model.entities.TotalAmount;
 import maratik.budget_manager.model.entities.User;

@@ -20,6 +20,7 @@ public class IncomeService {
     private final IncomeRepository incomeRepository;
     private final IncomeMapper incomeMapper;
     private final TotalIncomeService totalIncomeService;
+    private final AccountService accountService;
 
     public List<IncomeDto> getAllByUserId(UUID userId) {
         return incomeRepository.findAllByUserId(userId).stream()
@@ -38,23 +39,10 @@ public class IncomeService {
     public IncomeDto save(IncomeDto dto, UUID userId) {
         totalIncomeService.saveOrUpdate(null, dto.amount(), userId);
 
-        return incomeMapper.toIncomeDto(
-                incomeRepository.save(
-                        incomeMapper.toEntity(dto, userId)
-                ));
-    }
+        Income income = incomeRepository.save(incomeMapper.toEntity(dto, userId));
+        accountService.saveAccountIncomesFromIncomeAndUserId(income, userId);
 
-    @Transactional
-    public IncomeDto update(IncomeDtoWithId dto, UUID userId) {
-        Income income = incomeRepository.findByIdAndUserId(dto.id(), userId).orElseThrow(() ->
-                new EntityNotFoundException("No income found with id: " + dto.id()));
-        income.setAmount(dto.amount());
-
-        totalIncomeService.saveOrUpdate(null, dto.amount(), userId);
-
-        return incomeMapper.toIncomeDto(
-                incomeRepository.save(income)
-        );
+        return incomeMapper.toIncomeDto(income);
     }
 
     @Transactional

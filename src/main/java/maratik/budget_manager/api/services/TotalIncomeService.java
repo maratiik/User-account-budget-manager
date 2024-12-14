@@ -6,6 +6,7 @@ import maratik.budget_manager.model.dto.summary.FullSummaryIncomeDto;
 import maratik.budget_manager.model.entities.TotalAmount;
 import maratik.budget_manager.model.mappers.SummaryIncomeMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -54,6 +55,7 @@ public class TotalIncomeService {
         );
     }
 
+    @Transactional
     public void saveOrUpdate(String name, BigDecimal amountToAdd, UUID userId) {
         Optional<TotalAmount> totalOptional;
         if (name == null || name.isEmpty()) {
@@ -75,6 +77,7 @@ public class TotalIncomeService {
         totalAmountRepository.save(totalAmount);
     }
 
+    @Transactional
     public void deleteAmount(String name, BigDecimal amountToRemove, UUID userId) {
         Optional<TotalAmount> totalOptional;
         if (name == null || name.isEmpty()) {

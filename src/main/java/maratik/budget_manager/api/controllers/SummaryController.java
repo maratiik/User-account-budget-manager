@@ -26,10 +26,4 @@ public class SummaryController {
             @RequestParam(name = "name", required = false) List<String> names) {
         return totalIncomeService.getTotalIncome(user.getId(), names);
     }
-
-    @GetMapping(Endpoints.SUMMARY_INCOME_URI)
-    public FullSummaryIncomeDto getSummaryIncome(
-            @AuthenticationPrincipal User user) {
-        return totalIncomeService.getSummaryIncomeByUserId(user.getId());
-    }
 }

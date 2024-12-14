@@ -49,13 +49,6 @@ public class IncomeController {
         return incomeService.save(dto, user.getId());
     }
 
-    @PutMapping
-    public IncomeDto update(
-            @AuthenticationPrincipal User user,
-            @RequestBody IncomeDtoWithId dto) {
-        return incomeService.update(dto, user.getId());
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @AuthenticationPrincipal User user,

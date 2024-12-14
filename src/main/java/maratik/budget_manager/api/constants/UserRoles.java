@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum UserRoles {
     USER("USER_ROLE");
 
-    private String role;
+    private final String role;
 
     UserRoles(String role) {
         this.role = role;
