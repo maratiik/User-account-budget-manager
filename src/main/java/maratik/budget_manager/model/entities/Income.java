@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -32,6 +34,9 @@ public class Income {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", updatable = false, nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "income")
+    private List<SharedIncome> sharedIncomes = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

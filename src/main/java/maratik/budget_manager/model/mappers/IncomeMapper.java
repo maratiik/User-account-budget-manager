@@ -1,46 +1,43 @@
 package maratik.budget_manager.model.mappers;
 
-import lombok.RequiredArgsConstructor;
-import maratik.budget_manager.api.exceptions.EntityNotFoundException;
 import maratik.budget_manager.api.repositories.UserRepository;
-import maratik.budget_manager.model.dto.income.IncomeDto;
+import maratik.budget_manager.model.dto.IncomeDto;
+import maratik.budget_manager.model.dto.SharedIncomeDto;
 import maratik.budget_manager.model.entities.Income;
-import maratik.budget_manager.model.entities.TotalAmount;
+import maratik.budget_manager.model.entities.SharedIncome;
 import maratik.budget_manager.model.entities.User;
-import org.hibernate.LazyInitializationException;
-import org.springframework.stereotype.Component;
+import org.mapstruct.*;
 
+import java.util.List;
 import java.util.UUID;
 
-@Component
-@RequiredArgsConstructor
-public class IncomeMapper {
+@Mapper(
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        componentModel = MappingConstants.ComponentModel.SPRING,
+        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS
+)
+public interface IncomeMapper {
 
-    private final UserRepository userRepository;
+    @Mapping(target = "user", qualifiedByName = "idToUser")
+    Income toEntity(IncomeDto dto,
+                    @Context UUID userId,
+                    @Context UserRepository userRepo);
 
-    public IncomeDto toIncomeDto(Income income) throws LazyInitializationException {
-        return new IncomeDto(
-                income.getDate(),
-                income.getAmount(),
-                income.getUser().getUsername()
-        );
+    @Mapping(source = "sharedIncomes", target = "sharedIncomes", qualifiedByName = "mapSharedIncomes")
+    IncomeDto toDto(Income entity,
+                    @Context SharedIncomeMapper sharedIncomeMapper);
+
+    @Named("idToUser")
+    default User idToUser(UUID id,
+                          @Context UserRepository userRepo) {
+        return userRepo.getReferenceById(id);
     }
 
-    public IncomeDto toSummaryAccountDto(TotalAmount totalIncome) throws LazyInitializationException {
-        return new IncomeDto(
-                totalIncome.getUpdatedAt().toLocalDate(),
-                totalIncome.getAmount(),
-                totalIncome.getUser().getUsername()
-        );
-    }
-
-    public Income toEntity(IncomeDto dto, UUID userId) {
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                new EntityNotFoundException("User not found"));
-        Income income = new Income();
-        income.setAmount(dto.amount());
-        income.setDate(dto.date());
-        income.setUser(user);
-        return income;
+    @Named("mapSharedIncomes")
+    default List<SharedIncomeDto> mapSharedIncomes(List<SharedIncome> sharedIncomes,
+                                                   @Context SharedIncomeMapper sharedIncomeMapper) {
+        return sharedIncomes.stream()
+                .map(sharedIncomeMapper::toDto)
+                .toList();
     }
 }

@@ -12,44 +12,37 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "account_income")
+@Table(name = "shared_income")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountIncome {
+public class SharedIncome {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
-
-    @Column(name = "date", nullable = false, updatable = false)
-    private LocalDate date = LocalDate.now();
-
     @Column(name = "amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal amount;
-
-    @Column(name = "proportion", nullable = false)
-    private float proportion;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", updatable = false, nullable = false)
     private User user;
 
-    public BigDecimal calculateAmount(BigDecimal incomeAmount) {
-        amount = incomeAmount
-                .multiply(BigDecimal.valueOf(proportion));
-        return amount;
-    }
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "income_id", nullable = false, updatable = false)
+    private Income income;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_savings_account_id", nullable = false, updatable = false)
+    private UserSavingsAccount savingsAccount;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AccountIncome that = (AccountIncome) o;
+        SharedIncome that = (SharedIncome) o;
         return Objects.equals(id, that.id);
     }
 
@@ -62,9 +55,7 @@ public class AccountIncome {
     public String toString() {
         return "AccountIncome{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
                 ", amount=" + amount +
-                ", proportion=" + proportion +
                 '}';
     }
 }

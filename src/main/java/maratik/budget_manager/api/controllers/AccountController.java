@@ -2,8 +2,6 @@ package maratik.budget_manager.api.controllers;
 
 import lombok.RequiredArgsConstructor;
 import maratik.budget_manager.api.constants.Endpoints;
-import maratik.budget_manager.api.services.AccountService;
-import maratik.budget_manager.api.services.TotalIncomeService;
 import maratik.budget_manager.model.dto.account.AccountDto;
 import maratik.budget_manager.model.dto.account.AccountDtoWithId;
 import maratik.budget_manager.model.dto.summary.FullSummaryIncomeDto;

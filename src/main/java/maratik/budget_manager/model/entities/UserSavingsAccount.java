@@ -7,17 +7,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "total_amount")
+@Table(name = "user_savings_account")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TotalAmount {
+public class UserSavingsAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -26,31 +25,18 @@ public class TotalAmount {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "portion", precision = 3, scale = 2)
+    private BigDecimal portion;
 
-    @Column(name = "amount", precision = 10, scale = 2, nullable = false)
-    private BigDecimal amount;
-
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", updatable = false, nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
-
-    public BigDecimal add(BigDecimal amount) {
-        amount = amount.add(amount);
-        return amount;
-    }
-
-    public BigDecimal subtract(BigDecimal amount) {
-        amount = amount.subtract(amount);
-        return amount;
-    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TotalAmount that = (TotalAmount) o;
+        UserSavingsAccount that = (UserSavingsAccount) o;
         return Objects.equals(id, that.id);
     }
 
@@ -61,11 +47,10 @@ public class TotalAmount {
 
     @Override
     public String toString() {
-        return "TotalAmount{" +
+        return "UserSavingsAccount{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", updatedAt=" + updatedAt +
-                ", amount=" + amount +
+                ", portion=" + portion +
                 '}';
     }
 }

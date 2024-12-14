@@ -3,9 +3,14 @@ package maratik.budget_manager.api.services;
 import lombok.RequiredArgsConstructor;
 import maratik.budget_manager.api.exceptions.EntityNotFoundException;
 import maratik.budget_manager.api.repositories.IncomeRepository;
-import maratik.budget_manager.model.dto.income.IncomeDto;
+import maratik.budget_manager.api.repositories.SharedIncomeRepository;
+import maratik.budget_manager.api.repositories.UserRepository;
+import maratik.budget_manager.model.dto.IncomeDto;
 import maratik.budget_manager.model.entities.Income;
+import maratik.budget_manager.model.entities.SharedIncome;
+import maratik.budget_manager.model.entities.UserSavingsAccount;
 import maratik.budget_manager.model.mappers.IncomeMapper;
+import maratik.budget_manager.model.mappers.SharedIncomeMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,39 +21,56 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class IncomeService {
 
-    private final IncomeRepository incomeRepository;
     private final IncomeMapper incomeMapper;
-    private final TotalIncomeService totalIncomeService;
-    private final AccountService accountService;
+    private final UserRepository userRepository;
+    private final IncomeRepository incomeRepository;
 
-    public List<IncomeDto> getAllByUserId(UUID userId) {
-        return incomeRepository.findAllByUserId(userId).stream()
-                .map(incomeMapper::toIncomeDto)
-                .toList();
-    }
-
-    public IncomeDto getByIdAndUserId(UUID id, UUID userId) {
-        return incomeMapper.toIncomeDto(
-                incomeRepository.findByIdAndUserId(id, userId).orElseThrow(() ->
-                        new EntityNotFoundException("No income found with id: " + id))
-        );
-    }
+    private final SharedIncomeRepository sharedIncomeRepository;
+    private final SharedIncomeMapper sharedIncomeMapper;
 
     @Transactional
     public IncomeDto save(IncomeDto dto, UUID userId) {
-        totalIncomeService.saveOrUpdate(null, dto.amount(), userId);
-
-        Income income = incomeRepository.save(incomeMapper.toEntity(dto, userId));
-        accountService.saveAccountIncomesFromIncomeAndUserId(income, userId);
-
-        return incomeMapper.toIncomeDto(income);
+        Income income = incomeRepository.save(
+                incomeMapper.toEntity(dto, userId, userRepository)
+        );
+        List<UserSavingsAccount> userSavingsAccounts = income.getUser().getSavings();
+        if (!userSavingsAccounts.isEmpty()) {
+            income.setSharedIncomes(
+                    sharedIncomeRepository.saveAll(
+                            userSavingsAccounts.stream()
+                                    .map(acc -> {
+                                        SharedIncome sharedIncome = new SharedIncome();
+                                        sharedIncome.setAmount(income.getAmount().multiply(acc.getPortion()));
+                                        sharedIncome.setUser(income.getUser());
+                                        sharedIncome.setIncome(income);
+                                        sharedIncome.setSavingsAccount(acc);
+                                        return sharedIncome;
+                                    })
+                                    .toList()
+                    )
+            );
+        }
+        return incomeMapper.toDto(incomeRepository.save(income), sharedIncomeMapper);
     }
 
     @Transactional
-    public void deleteByIdAndUserId(UUID id, UUID userId) {
-        Income income = incomeRepository.findByIdAndUserId(id, userId).orElseThrow(() ->
-                new EntityNotFoundException("No income found"));
-        totalIncomeService.deleteAmount(null, income.getAmount(), userId);
+    public void delete(UUID userId, UUID incomeId) {
+        Income income = incomeRepository.findByIdAndUserId(incomeId, userId).orElseThrow(() ->
+                new EntityNotFoundException("Income not found."));
         incomeRepository.delete(income);
+    }
+
+    public List<IncomeDto> findAll(UUID userId) {
+        return incomeRepository.findAllByUserId(userId).stream()
+                .map(i -> incomeMapper.toDto(i, sharedIncomeMapper))
+                .toList();
+    }
+
+    public IncomeDto findById(UUID userId, UUID incomeId) {
+        return incomeMapper.toDto(
+                incomeRepository.findByIdAndUserId(incomeId, userId).orElseThrow(() ->
+                        new EntityNotFoundException("Income not found.")),
+                sharedIncomeMapper
+        );
     }
 }

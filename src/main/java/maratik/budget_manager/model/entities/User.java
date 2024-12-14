@@ -9,10 +9,7 @@ import maratik.budget_manager.api.constants.UserRoles;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "user")
@@ -33,7 +30,10 @@ public class User implements UserDetails {
     private String username;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<Income> incomes;
+    private List<Income> incomes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<UserSavingsAccount> savings = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
