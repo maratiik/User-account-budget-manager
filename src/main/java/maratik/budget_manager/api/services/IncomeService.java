@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import maratik.budget_manager.api.exceptions.EntityNotFoundException;
 import maratik.budget_manager.api.repositories.IncomeRepository;
 import maratik.budget_manager.model.dto.income.IncomeDto;
-import maratik.budget_manager.model.dto.income.IncomeDtoWithId;
 import maratik.budget_manager.model.entities.Income;
 import maratik.budget_manager.model.mappers.IncomeMapper;
 import org.springframework.stereotype.Service;

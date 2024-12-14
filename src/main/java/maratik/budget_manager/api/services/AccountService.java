@@ -84,6 +84,7 @@ public class AccountService {
         for (NameProportionDto name : names) {
             AccountIncome acc = new AccountIncome();
             acc.setName(name.name());
+            acc.setUser(user);
             acc.setProportion(name.proportion());
             acc.calculateAmount(income.getAmount());
             accountIncomeRepository.save(acc);
