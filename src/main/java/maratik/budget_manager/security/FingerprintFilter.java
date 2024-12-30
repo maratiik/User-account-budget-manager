@@ -35,7 +35,7 @@ public class FingerprintFilter extends OncePerRequestFilter {
             @Nonnull HttpServletRequest request,
             @Nonnull HttpServletResponse response,
             @Nonnull FilterChain filterChain) throws ServletException, IOException {
-        String fingerprint = request.getParameter("fingerprint");
+        String fingerprint = request.getHeader("fingerprint");
 
         if (fingerprint == null || fingerprint.isEmpty()) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());

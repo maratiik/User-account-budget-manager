@@ -8,5 +8,9 @@ public abstract class Endpoints {
 
     public static final String INCOME = "/api/income";
 
-    public static final String ACCOUNT = "/api/account";
+    public static final String USER_SAVINGS = "/api/savings-accounts";
+
+    public static final String SHARED_URI = "/shared";
+
+    public static final String INCOME_URI = "/income";
 }

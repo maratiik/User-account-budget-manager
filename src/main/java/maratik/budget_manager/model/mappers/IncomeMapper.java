@@ -18,20 +18,16 @@ import java.util.UUID;
 )
 public interface IncomeMapper {
 
-    @Mapping(target = "user", qualifiedByName = "idToUser")
-    Income toEntity(IncomeDto dto,
-                    @Context UUID userId,
-                    @Context UserRepository userRepo);
+    Income toEntity(IncomeDto dto);
 
     @Mapping(source = "sharedIncomes", target = "sharedIncomes", qualifiedByName = "mapSharedIncomes")
     IncomeDto toDto(Income entity,
                     @Context SharedIncomeMapper sharedIncomeMapper);
 
-    @Named("idToUser")
-    default User idToUser(UUID id,
-                          @Context UserRepository userRepo) {
-        return userRepo.getReferenceById(id);
-    }
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "sharedIncomes", ignore = true)
+    @Mapping(target = "date", ignore = true)
+    Income partialUpdate(IncomeDto dto, @MappingTarget Income income);
 
     @Named("mapSharedIncomes")
     default List<SharedIncomeDto> mapSharedIncomes(List<SharedIncome> sharedIncomes,

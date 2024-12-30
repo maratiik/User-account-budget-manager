@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #333;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .section {
+            margin-top: 20px;
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+
+        .section-content {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .visible {
+            display: block;
+        }
+
+        .tab {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .tab:nth-child(odd) {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .tab:nth-child(even) {
+            background-color: #444;
+            color: #ccc;
+        }
+
+        .tab.active {
+            background-color: #555;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .floating-form {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            max-width: 300px;
+            transition: transform 0.3s ease-in-out;
+            transform: translateY(-110%);
+        }
+
+        .floating-form.closed {
+            transform: translateY(0);
+        }
+
+        .toggle-form-button {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .toggle-form-button:hover {
+            background-color: #555;
+        }
+
+        .form-content {
+            display: none;
+        }
+
+        .floating-form:not(.closed) .form-content {
+            display: block;
+            margin-top: 10px;
+        }
+
+        .floating-form h3 {
+            margin: 0 0 10px;
+        }
+
+        .floating-form label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .floating-form input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .floating-form button {
+            display: block;
+            width: 100%;
+            padding: 5px;
+            background-color: #555;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .floating-form button:hover {
+            background-color: #777;
+        }
+
+        .total-income-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 15px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .total-income-container h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .total-income-container button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #555;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .total-income-container button:hover {
+            background-color: #777;
+        }
+
+        .tabs-section {
+            margin-top: 20px;
+        }
+
+        .data-table {
+            display: none;
+        }
+
+        .data-table.active {
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+<div class="floating-form closed" id="floating-form">
+    <button class="toggle-form-button" onclick="toggleFormVisibility()">Add Income / Add Savings Account</button>
+    <div class="form-content">
+        <form id="salary-form">
+            <h3>Add Income</h3>
+            <label for="salary-date">Date:</label>
+            <input type="date" id="salary-date" value="" required>
+
+            <label for="salary-amount">Amount:</label>
+            <input type="number" id="salary-amount" step="0.01" required>
+
+            <button type="submit">Add Salary</button>
+        </form>
+        <form id="savings-form">
+            <h3>Add Savings Account</h3>
+            <label for="account-name">Account Name:</label>
+            <input type="text" id="account-name" required>
+
+            <label for="account-portion">Portion:</label>
+            <input type="number" id="account-portion" step="0.01" min="0" max="1" required>
+
+            <button type="submit">Add Account</button>
+        </form>
+    </div>
+</div>
+
+<div class="total-income-container">
+    <h2>Total Income</h2>
+    <p id="total-income">Loading...</p>
+    <button onclick="toggleDetailedSummary()">Detailed</button>
+
+    <div id="detailed-summary" class="section-content">
+        <h3>Summary by User Accounts</h3>
+        <table id="summary-shared-table">
+            <thead>
+            <tr>
+                <th>Account Name</th>
+                <th>Shared Income</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tabs-section">
+    <div class="tab" onclick="toggleTab('salary-records')">Salary Records</div>
+    <div class="tab" onclick="toggleTab('savings-accounts')">Savings Accounts</div>
+    <div class="tab" onclick="toggleTab('shared-incomes')">Shared Incomes</div>
+</div>
+
+<div id="salary-records" class="data-table">
+    <h3>Salary Records</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Amount</th>
+        </tr>
+        </thead>
+        <tbody id="salary-table-body"></tbody>
+    </table>
+</div>
+
+<div id="savings-accounts" class="data-table">
+    <h3>Savings Accounts</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Account Name</th>
+            <th>Portion</th>
+        </tr>
+        </thead>
+        <tbody id="account-table-body"></tbody>
+    </table>
+</div>
+
+<div id="shared-incomes" class="data-table">
+    <h3>Shared Incomes</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Amount</th>
+        </tr>
+        </thead>
+        <tbody id="shared-income-table-body"></tbody>
+    </table>
+</div>
+
+<script>
+    const salaryForm = document.getElementById('salary-form');
+    const savingsForm = document.getElementById('savings-form');
+    const totalIncomeElement = document.getElementById('total-income');
+    const detailedSummary = document.getElementById('detailed-summary');
+    const today = new Date().toISOString().split('T')[0];
+
+    const floatingForm = document.getElementById('floating-form');
+
+    function toggleFormVisibility() {
+        floatingForm.classList.toggle('closed');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const salaryDateInput = document.getElementById('salary-date');
+        if (salaryDateInput) {
+            salaryDateInput.value = new Date().toISOString().split('T')[0];
+        }
+    });
+
+    document.getElementById('salary-date').value = today;
+
+    function toggleDetailedSummary() {
+        detailedSummary.classList.toggle('visible');
+    }
+
+    function toggleTab(tabId) {
+        const tab = document.getElementById(tabId);
+        tab.classList.toggle('active');
+    }
+
+    async function fetchTotalIncome() {
+        try {
+            const response = await fetch('/api/summary/income', {
+                headers: { 'fingerprint': 'your-fingerprint' }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch total income');
+
+            const data = await response.json();
+            totalIncomeElement.textContent = data.summaryIncome;
+        } catch (error) {
+            console.error('Error fetching total income:', error);
+        }
+    }
+
+    async function fetchSharedSummary() {
+        try {
+            const response = await fetch('/api/summary/shared', {
+                headers: { 'fingerprint': 'your-fingerprint' }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch shared summary');
+
+            const data = await response.json();
+            const tableBody = document.querySelector('#summary-shared-table tbody');
+            tableBody.innerHTML = '';
+
+            Object.entries(data.sharedIncomeSummaries).forEach(([accountName, sharedIncome]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${accountName}</td><td>${sharedIncome}</td>`;
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Error fetching shared summary:', error);
+        }
+    }
+
+    async function addSalary(event) {
+        event.preventDefault();
+
+        const date = document.getElementById('salary-date').value;
+        const amount = document.getElementById('salary-amount').value;
+
+        try {
+            const response = await fetch('/api/incomes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'fingerprint': 'your-fingerprint'
+                },
+                body: JSON.stringify({ date, amount })
+            });
+
+            if (!response.ok) throw new Error('Failed to add salary');
+
+            await fetchTotalIncome();
+        } catch (error) {
+            console.error('Error adding salary:', error);
+        }
+    }
+
+    async function addSavingsAccount(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('account-name').value;
+        const portion = document.getElementById('account-portion').value;
+
+        try {
+            const response = await fetch('/api/savings-accounts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'fingerprint': 'your-fingerprint'
+                },
+                body: JSON.stringify({ name, portion })
+            });
+
+            if (!response.ok) throw new Error('Failed to add savings account');
+
+            await fetchSharedSummary();
+        } catch (error) {
+            console.error('Error adding savings account:', error);
+        }
+    }
+
+    salaryForm.addEventListener('submit', addSalary);
+    savingsForm.addEventListener('submit', addSavingsAccount);
+
+    // Initial fetches
+    fetchTotalIncome();
+    fetchSharedSummary();
+</script>

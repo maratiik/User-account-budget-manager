@@ -10,6 +10,7 @@ import maratik.budget_manager.model.mappers.UserSavingsAccountMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,9 +24,19 @@ public class UserSavingsAccountService {
 
     @Transactional
     public UserSavingsAccountDto save(UserSavingsAccountDto dto, UUID userId) {
+        List<UserSavingsAccount> savings = userSavingsAccountRepository.findAllByUserId(userId);
+        BigDecimal portionsSum = BigDecimal.ZERO;
+        for (UserSavingsAccount saving : savings) {
+            portionsSum = portionsSum.add(saving.getPortion());
+        }
+        if (!portionsSum.equals(BigDecimal.ONE)) {
+            throw new IllegalArgumentException("Sum of proportions must be 1.");
+        }
+        UserSavingsAccount saving = userSavingsAccountMapper.toEntity(dto);
+        saving.setUser(userRepository.getReferenceById(userId));
         return userSavingsAccountMapper.toDto(
                 userSavingsAccountRepository.save(
-                        userSavingsAccountMapper.toEntity(dto, userId, userRepository)
+                        saving
         ));
     }
 

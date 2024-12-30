@@ -15,15 +15,7 @@ import java.util.UUID;
 )
 public interface UserSavingsAccountMapper {
 
-    @Mapping(target = "user", qualifiedByName = "idToUser")
-    UserSavingsAccount toEntity(UserSavingsAccountDto dto,
-                                UUID userId,
-                                @Context UserRepository userRepository);
+    UserSavingsAccount toEntity(UserSavingsAccountDto dto);
 
     UserSavingsAccountDto toDto(UserSavingsAccount account);
-
-    @Named("idToUser")
-    default User idToUser(UUID userId, @Context UserRepository userRepository) {
-        return userRepository.getReferenceById(userId);
-    }
 }
